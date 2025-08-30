@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Store - Elegant E-Commerce</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .product-card {
+            transition: transform 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .cart-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        #admin-sectionmonday, #delivery-section, #user-section {
+            display: none;
+        }
+        .payment-links a {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="#">FashionHub</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#" id="home-link">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" id="cart-link" style="display:none;">Cart</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" id="orders-link" style="display:none;">Orders</a></li>
+                <li class="nav-item"><button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login/Register</button></li>
+                <li class="nav-item"><button class="btn btn-outline-danger" id="logout-btn" style="display:none;">Logout</button></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="hero-section">
+    <div class="container">
+        <h1 class="display-4">Discover the Latest Fashion Trends</h1>
+        <p>Shop premium clothing and accessories at unbeatable prices.</p>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section class="container my-5" id="products-section">
+    <h2 class="text-center mb-4">Our Products</h2>
+    <div class="row" id="products-grid"></div>
+</section>
+
+<!-- User Section: Cart -->
+<section class="container my-5" id="user-cart" style="display:none;">
+    <h2>Your Cart</h2>
+    <div id="cart-items"></div>
+    <div id="cart-total" class="mt-4"></div>
+    <button class="btn btn-primary mt-3" id="checkout-btn">Checkout</button>
+</section>
+
+<!-- User Section: Orders -->
+<section class="container my-5" id="user-orders" style="display:none;">
+    <h2>Order History</h2>
+    <div id="orders-list"></div>
+</section>
+
+<!-- Admin Section -->
+<section class="container my-5" id="admin-section">
+    <h2>Admin Dashboard</h2>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>Add New Product</h4>
+            <form id="add-product-form">
+                <div class="mb-3"><input type="text" class="form-control" id="product-name" placeholder="Name" required></div>
+                <div class="mb-3"><textarea class="form-control" id="product-desc" placeholder="Description" required></textarea></div>
+                <div class="mb-3"><input type="number" class="form-control" id="product-price" placeholder="Price" required></div>
+                <div class="mb-3"><input type="text" class="form-control" id="product-category" placeholder="Category" required></div>
+                <div class="mb-3"><input type="text" class="form-control" id="product-image" placeholder="Image URL" required></div>
+                <button type="submit" class="btn btn-success">Add Product</button>
+            </form>
+        </div>
+    </div>
+    <h4>All Orders</h4>
+    <div id="admin-orders"></div>
+</section>
+
+<!-- Delivery Section -->
+<section class="container my-5" id="delivery-section">
+    <h2>Delivery Dashboard</h2>
+    <div class="card">
+        <div class="card-body">
+            <h4>Search Order by OTP</h4>
+            <input type="text" class="form-control mb-3" id="search-otp" placeholder="Enter OTP">
+            <button class="btn btn-primary" id="search-otp-btn">Search</button>
+            <div id="delivery-order-details" class="mt-4"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Login/Register Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Login / Register</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="authTabs">
+                    <li class="nav-item"><a class="nav-link active" href="#user-login">User</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#delivery-login">Delivery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#owner-login">Owner</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#register">Register</a></li>
+                </ul>
+                <div class="tab-content mt-3">
+                    <div id="user-login" class="tab-pane active">
+                        <form id="user-login-form">
+                            <div class="mb-3"><input type="email" class="form-control" id="user-email" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="user-password" placeholder="Password" required></div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form>
+                    </div>
+                    <div id="delivery-login" class="tab-pane">
+                        <form id="delivery-login-form">
+                            <div class="mb-3"><input type="email" class="form-control" id="delivery-email" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="delivery-password" placeholder="Password" required></div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form>
+                    </div>
+                    <div id="owner-login" class="tab-pane">
+                        <form id="owner-login-form">
+                            <div class="mb-3"><input type="email" class="form-control" id="owner-email" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="owner-password" placeholder="Password" required></div>
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </form>
+                    </div>
+                    <div id="register" class="tab-pane">
+                        <form id="register-form">
+                            <div class="mb-3"><input type="text" class="form-control" id="reg-username" placeholder="Username" required></div>
+                            <div class="mb-3"><input type="email" class="form-control" id="reg-email" placeholder="Email" required></div>
+                            <div class="mb-3"><input type="password" class="form-control" id="reg-password" placeholder="Password" required></div>
+                            <select class="form-select mb-3" id="reg-role">
+                                <option value="user">User</option>
+                                <option value="delivery">Delivery</option>
+                            </select>
+                            <div class="mb-3"><input type="text" class="form-control" id="reg-phone" placeholder="Phone (for delivery)" style="display:none;"></div>
+                            <button type="submit" class="btn btn-success">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="payment-details"></div>
+                <div class="payment-links" id="payment-links"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const API_BASE = 'http://localhost:5000';
+    let token = localStorage.getItem('token');
+    let role = localStorage.getItem('role');
+    let userId = localStorage.getItem('userId');
+
+    // Show/hide phone field for delivery registration
+    document.querySelector('#reg-role').addEventListener('change', (e) => {
+        document.querySelector('#reg-phone').style.display = e.target.value === 'delivery' ? 'block' : 'none';
+    });
+
+    // Tab navigation for modal
+    document.querySelectorAll('#authTabs .nav-link').forEach(tab => {
+        tab.addEventListener('click', e => {
+            e.preventDefault();
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelector(tab.getAttribute('href')).classList.add('active');
+        });
+    });
+
+    // Check if logged in
+    function checkLogin() {
+        if (token) {
+            document.querySelector('#logout-btn').style.display = 'block';
+            if (role === 'user') {
+                document.querySelector('#cart-link').style.display = 'block';
+                document.querySelector('#orders-link').style.display = 'block';
+            } else if (role === 'owner') {
+                document.querySelector('#admin-section').style.display = 'block';
+                loadAdminOrders();
+            } else if (role === 'delivery') {
+                document.querySelector('#delivery-section').style.display = 'block';
+            }
+        } else {
+            document.querySelector('#logout-btn').style.display = 'none';
+            document.querySelector('#cart-link').style.display = 'none';
+            document.querySelector('#orders-link').style.display = 'none';
+            document.querySelector('#admin-section').style.display = 'none';
+            document.querySelector('#delivery-section').style.display = 'none';
+            document.querySelector('#user-cart').style.display = 'none';
+            document.querySelector('#user-orders').style.display = 'none';
+        }
+    }
+
+    // Load Products
+    async function loadProducts() {
+        try {
+            const res = await fetch(`${API_BASE}/products`);
+            const products = await res.json();
+            const grid = document.querySelector('#products-grid');
+            grid.innerHTML = '';
+            products.forEach(p => {
+                const card = `
+                    <div class="col-md-3 mb-4">
+                        <div class="card product-card">
+                            <img src="${p.image}" class="card-img-top" alt="${p.name}">
+                            <div class="card-body">
+                                <h5 class="card-title">${p.name}</h5>
+                                <p class="card-text">₹${p.price}</p>
+                                ${token && role === 'user' ? `<button class="btn btn-primary add-to-cart" data-id="${p._id}">Add to Cart</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const id = e.target.dataset.id;
+                    try {
+                        await fetch(`${API_BASE}/cart/add`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ productId: id, quantity: 1 })
+                        });
+                        alert('Added to cart');
+                    } catch (err) {
+                        console.error('Add to cart error:', err);
+                        alert('Failed to add to cart');
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('Load products error:', err);
+        }
+    }
+
+    // Load Cart
+    async function loadCart() {
+        try {
+            const res = await fetch(`${API_BASE}/cart`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            const items = document.querySelector('#cart-items');
+            items.innerHTML = '';
+            data.cart.forEach(item => {
+                items.innerHTML += `
+                    <div class="cart-item d-flex justify-content-between align-items-center">
+                        <div>${item.name} x ${item.quantity} - ₹${item.price * item.quantity}</div>
+                        <div>
+                            <button class="btn btn-sm btn-warning update-qty" data-id="${item.productId}" data-qty="${item.quantity + 1}">+</button>
+                            <button class="btn btn-sm btn-warning update-qty" data-id="${item.productId}" data-qty="${item.quantity - 1}">-</button>
+                            <button class="btn btn-sm btn-danger remove-item" data-id="${item.productId}">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.querySelector('#cart-total').innerHTML = `
+                <p>Subtotal: ₹${data.breakdown.subtotal}</p>
+                <p>GST: ₹${data.breakdown.gstAmount}</p>
+                <p>Platform Fee: ₹${data.breakdown.platformFee}</p>
+                <p>Delivery Fee: ₹${data.breakdown.deliveryFee}</p>
+                <h4>Total: ₹${data.breakdown.totalAmount}</h4>
+            `;
+            document.querySelectorAll('.update-qty').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const id = e.target.dataset.id;
+                    const qty = parseInt(e.target.dataset.qty);
+                    if (qty > 0) {
+                        try {
+                            await fetch(`${API_BASE}/cart/update`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ productId: id, quantity: qty })
+                            });
+                            loadCart();
+                        } catch (err) {
+                            console.error('Update cart error:', err);
+                        }
+                    }
+                });
+            });
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const id = e.target.dataset.id;
+                    try {
+                        await fetch(`${API_BASE}/cart/remove`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({ productId: id })
+                        });
+                        loadCart();
+                    } catch (err) {
+                        console.error('Remove item error:', err);
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('Load cart error:', err);
+        }
+    }
+
+    // Checkout
+    document.querySelector('#checkout-btn').addEventListener('click', async () => {
+        try {
+            const res = await fetch(`${API_BASE}/orders/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ paymentOption: 'upi' })
+            });
+            const data = await res.json();
+            if (data.message.includes("successfully")) {
+                document.querySelector('#payment-details').innerHTML = `
+                    <p>Total: ₹${data.orderDetails.totalAmount}</p>
+                `;
+                document.querySelector('#payment-links').innerHTML = `
+                    <a href="${data.upiLink}">Pay with UPI</a>
+                    <a href="${data.phonepeLink}">Pay with PhonePe</a>
+                    <a href="${data.gpayLink}">Pay with GPay</a>
+                `;
+                new bootstrap.Modal(document.querySelector('#paymentModal')).show();
+            } else {
+                alert(data.message);
+            }
+        } catch (err) {
+            console.error('Checkout error:', err);
+            alert('Checkout failed');
+        }
+    });
+
+    // Load User Orders
+    async function loadUserOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/orders/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const orders = await res.json();
+            const list = document.querySelector('#orders-list');
+            list.innerHTML = '';
+            orders.forEach(o => {
+                list.innerHTML += `
+                    <div class="order-card">
+                        <h5>Order ID: ${o._id}</h5>
+                        <p>Status: ${o.status}</p>
+                        <p>Payment: ${o.paymentStatus}</p>
+                        <p>Total: ₹${o.totalAmount}</p>
+                        <button class="btn btn-danger cancel-order" data-id="${o._id}" ${o.status !== 'pending' ? 'disabled' : ''}>Cancel</button>
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.cancel-order').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const id = e.target.dataset.id;
+                    try {
+                        await fetch(`${API_BASE}/orders/cancel/${id}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        loadUserOrders();
+                    } catch (err) {
+                        console.error('Cancel order error:', err);
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('Load orders error:', err);
+        }
+    }
+
+    // Load Admin Orders
+    async function loadAdminOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/orders/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const orders = await res.json();
+            const list = document.querySelector('#admin-orders');
+            list.innerHTML = '';
+            orders.forEach(o => {
+                list.innerHTML += `
+                    <div class="order-card">
+                        <h5>Order ID: ${o._id} - User: ${o.user.username}</h5>
+                        <p>Status: ${o.status}</p>
+                        <p>Payment: ${o.paymentStatus}</p>
+                        <p>Total: ₹${o.totalAmount}</p>
+                        ${o.paymentStatus === 'pending' ? `<button class="btn btn-success confirm-payment" data-id="${o._id}">Confirm Payment</button>` : ''}
+                    </div>
+                `;
+            });
+            document.querySelectorAll('.confirm-payment').forEach(btn => {
+                btn.addEventListener('click', async e => {
+                    const id = e.target.dataset.id;
+                    try {
+                        const res = await fetch(`${API_BASE}/orders/manual-confirm/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                            body: JSON.stringify({})
+                        });
+                        const data = await res.json();
+                        alert(`Payment confirmed. OTP: ${data.otp}`);
+                        loadAdminOrders();
+                    } catch (err) {
+                        console.error('Confirm payment error:', err);
+                        alert('Failed to confirm payment');
+                    }
+                });
+            });
+        } catch (err) {
+            console.error('Load admin orders error:', err);
+        }
+    }
+
+    // Add Product
+    document.querySelector('#add-product-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            name: document.querySelector('#product-name').value,
+            description: document.querySelector('#product-desc').value,
+            price: parseFloat(document.querySelector('#product-price').value),
+            category: document.querySelector('#product-category').value,
+            image: document.querySelector('#product-image').value
+        };
+        try {
+            await fetch(`${API_BASE}/products`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify(data)
+            });
+            alert('Product added');
+            loadProducts();
+        } catch (err) {
+            console.error('Add product error:', err);
+            alert('Failed to add product');
+        }
+    });
+
+    // Delivery Search OTP
+    document.querySelector('#search-otp-btn').addEventListener('click', async () => {
+        const otp = document.querySelector('#search-otp').value;
+        try {
+            const res = await fetch(`${API_BASE}/delivery/search?otp=${otp}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            document.querySelector('#delivery-order-details').innerHTML = `
+                <h5>Order ID: ${data.order._id}</h5>
+                <p>User: ${data.user.username}</p>
+                <p>Total: ₹${data.order.totalAmount}</p>
+                <input type="text" class="form-control mb-3" id="confirm-otp" placeholder="Confirm OTP">
+                <button class="btn btn-success" id="confirm-delivery-btn" data-id="${data.order._id}">Confirm Delivery</button>
+            `;
+            document.querySelector('#confirm-delivery-btn').addEventListener('click', async () => {
+                const confirmOtp = document.querySelector('#confirm-otp').value;
+                try {
+                    await fetch(`${API_BASE}/delivery/confirm/${data.order._id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ otp: confirmOtp })
+                    });
+                    alert('Delivery confirmed');
+                    document.querySelector('#delivery-order-details').innerHTML = '';
+                } catch (err) {
+                    console.error('Confirm delivery error:', err);
+                    alert('Failed to confirm delivery');
+                }
+            });
+        } catch (err) {
+            console.error('Search OTP error:', err);
+            alert('Order not found');
+        }
+    });
+
+    // User Login
+    document.querySelector('#user-login-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            email: document.querySelector('#user-email').value.trim().toLowerCase(),
+            password: document.querySelector('#user-password').value,
+            role: 'user'
+        };
+        console.log('User login data:', data); // Debugging
+        try {
+            const res = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                token = result.token;
+                role = result.user.role;
+                userId = result.user.id;
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', role);
+                localStorage.setItem('userId', userId);
+                bootstrap.Modal.getInstance(document.querySelector('#loginModal')).hide();
+                checkLogin();
+                loadProducts();
+                alert('Login successful');
+            } else {
+                console.error('Login error response:', result);
+                alert(result.message || 'Login failed');
+            }
+        } catch (err) {
+            console.error('User login error:', err);
+            alert('Login failed: Network or server error');
+        }
+    });
+
+    // Delivery Login
+    document.querySelector('#delivery-login-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            email: document.querySelector('#delivery-email').value.trim().toLowerCase(),
+            password: document.querySelector('#delivery-password').value
+        };
+        console.log('Delivery login data:', data); // Debugging
+        try {
+            const res = await fetch(`${API_BASE}/api/delivery/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                token = result.token;
+                role = 'delivery';
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', role);
+                bootstrap.Modal.getInstance(document.querySelector('#loginModal')).hide();
+                checkLogin();
+                alert('Delivery login successful');
+            } else {
+                console.error('Delivery login error response:', result);
+                alert(result.message || 'Delivery login failed');
+            }
+        } catch (err) {
+            console.error('Delivery login error:', err);
+            alert('Delivery login failed: Network or server error');
+        }
+    });
+
+    // Owner Login
+    document.querySelector('#owner-login-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            email: document.querySelector('#owner-email').value.trim().toLowerCase(),
+            password: document.querySelector('#owner-password').value
+        };
+        console.log('Owner login data:', data); // Debugging
+        try {
+            const res = await fetch(`${API_BASE}/owner/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                token = result.token;
+                role = result.user.role;
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', role);
+                bootstrap.Modal.getInstance(document.querySelector('#loginModal')).hide();
+                checkLogin();
+                alert('Owner login successful');
+            } else {
+                console.error('Owner login error response:', result);
+                alert(result.message || 'Owner login failed');
+            }
+        } catch (err) {
+            console.error('Owner login error:', err);
+            alert('Owner login failed: Network or server error');
+        }
+    });
+
+    // Register
+    document.querySelector('#register-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            username: document.querySelector('#reg-username').value.trim(),
+            email: document.querySelector('#reg-email').value.trim().toLowerCase(),
+            password: document.querySelector('#reg-password').value,
+            role: document.querySelector('#reg-role').value
+        };
+        if (data.role === 'delivery') {
+            data.name = data.username;
+            data.phone = document.querySelector('#reg-phone').value.trim() || '1234567890';
+        }
+        console.log('Register data:', data); // Debugging
+        try {
+            const endpoint = data.role === 'delivery' ? '/api/delivery/register' : '/register';
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (res.ok) {
+                alert('Registered successfully. Please login.');
+            } else {
+                console.error('Register error response:', result);
+                alert(result.message || 'Registration failed');
+            }
+        } catch (err) {
+            console.error('Register error:', err);
+            alert('Registration failed: Network or server error');
+        }
+    });
+
+    // Logout
+    document.querySelector('#logout-btn').addEventListener('click', () => {
+        localStorage.clear();
+        token = null;
+        role = null;
+        userId = null;
+        checkLogin();
+        alert('Logged out');
+    });
+
+    // Navigation
+    document.querySelector('#home-link').addEventListener('click', () => {
+        document.querySelector('#user-cart').style.display = 'none';
+        document.querySelector('#user-orders').style.display = 'none';
+        document.querySelector('#products-section').style.display = 'block';
+        document.querySelector('#hero-section').style.display = 'block';
+    });
+    document.querySelector('#cart-link').addEventListener('click', () => {
+        document.querySelector('#user-cart').style.display = 'block';
+        document.querySelector('#user-orders').style.display = 'none';
+        document.querySelector('#products-section').style.display = 'none';
+        document.querySelector('#hero-section').style.display = 'none';
+        loadCart();
+    });
+    document.querySelector('#orders-link').addEventListener('click', () => {
+        document.querySelector('#user-orders').style.display = 'block';
+        document.querySelector('#user-cart').style.display = 'none';
+        document.querySelector('#products-section').style.display = 'none';
+        document.querySelector('#hero-section').style.display = 'none';
+        loadUserOrders();
+    });
+
+    // Initial load
+    checkLogin();
+    loadProducts();
+</script>
+</body>
+</html>
